@@ -127,6 +127,92 @@ fn calculate_length(s: String) -> (String, usize) {
 Too much work! so use ```references``` and ```borrowing```
 
 #### 4.2 References
-Rules:
+Reference do not take ownership. It refer (only pointer) to a value, therefore will not be dropped.
+The action of creating a reference is called ```borrowing```.
+
+<u>Usage</u>
+```rust
+// ampersands & to use reference
+fn main() {
+    let s1 = String::from("hello");
+    let len = calculate_length(&s1);
+    println!("The length of '{s1}' is {len}.");
+}
+fn calculate_length(s: &String) -> usize { // s is a String reference
+    s.len()
+} // s goes out of scope. But because s does not have ownership of what
+  // it refers to, the value is not dropped.
+```
+
+##### Mutable references
+References do not allow the value to be modified, unless using ```&mut```
+```rust
+fn main() {
+    let mut s = String::from("hello");
+    change(&mut s);
+}
+
+fn change(some_string: &mut String) {
+    some_string.push_str(", world");
+}
+```
+Multiple ```&mut``` of the same value will not work. This prevents ```data race```.
+```rust
+// This will not work!
+let mut s = String::from("hello");
+let r1 = &mut s;
+let r2 = &mut s; 
+```
+The above results in error! But you can make it work by scoping it, eg.
+```rust
+{
+    let r1 = &mut s;
+} // r1 goes out of scope here, so we can make a new reference with no problems.
+let r2 = &mut s;
+```
+You should not mix mutable and immutable reference.
+```rust
+let mut s = String::from("hello");
+let r1 = &s; // no problem
+let r2 = &s; // no problem
+let r3 = &mut s; // BIG PROBLEM
+println!("{}, {}, and {}", r1, r2, r3);
+```
+##### Dangling references
+Rust compiler guarantees that references will never be dangling. Example of dangling references:
+```rust
+fn main() {
+    let reference_to_nothing = dangle(); // does not work because borrowed value is return and it is dangling
+}
+
+fn dangle() -> &String { // returns a reference to a String
+    let s = String::from("hello"); // s is a new String
+    &s // we return a reference to the String, s
+} // Here, s goes out of scope, and is dropped. Its memory goes away.
+  // Danger!
+```
+
+#### Rules:
 - At any given time, you can have either one mutable reference or any number of immutable references.
 - References must always be valid.
+
+#### 4.3 The Slice Type
+Slicing a string literal or ```String```
+```rust
+let s = String::from("Hello,world");
+let hello = &s[0..5];
+let world = &s[6..11];
+
+// if start from first, can omit "0"
+let hello = &s[..5];
+// if slice to end, can omit too
+let world = &s[6..];
+
+let full = &s[..];
+```
+
+Slicing an array
+```rust
+let a = [1, 2, 3, 4, 5];
+let slice = &a[1..3]; // results in [2,3]
+```
