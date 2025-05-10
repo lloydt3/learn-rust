@@ -280,3 +280,5 @@ impl Rectangle {
 }
 ```
 In the above example, use ```::``` to call the associated function;```let sq = Rectangle::square(3);```
+
+[home](../README.md)

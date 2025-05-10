@@ -163,3 +163,5 @@ for element in 10..20 {
     // prints 10,11,12...19
 }
 ```
+
+[Next: Chapter 4](../chap4/notes.md)

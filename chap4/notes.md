@@ -216,3 +216,5 @@ Slicing an array
 let a = [1, 2, 3, 4, 5];
 let slice = &a[1..3]; // results in [2,3]
 ```
+
+[Next: Chapter 5](../chap5/notes.md)
