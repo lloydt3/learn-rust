@@ -59,7 +59,7 @@ But for data types like ```String```, the variable stores pointers, len & cap on
 
 ```rust
 let s1 = String::from("hello"); 
-let s2 = s1; // copies only stack data
+let s2 = s1; // copies only stack data, and s1 can no longer be used
 ```
 Rust does not copy ```heap``` data because it is runtime expensive.
 Hence, there is a problem because s1 & s2 will point to the same ```heap```, and if ```drop``` executes it will try to free both memory of s1 & s2, which lead to double free error. So Rust solves it by invalidating s1. This is called ```move```, as in moving s1 to s2.

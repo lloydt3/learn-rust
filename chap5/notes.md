@@ -108,3 +108,175 @@ fn main() {
 }
 ```
 Why is this neccessary? To implement trait on some type but no data. Honestly I have no idea.. maybe I will understand it's importance as I go on this tutorial.
+
+#### 5.3 Add functionality with Derived Traits
+```rust
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
+
+    println!("rect1 is {}", rect1);
+}
+```
+
+The above code will result in error of```error[E0277]: `Rectangle` doesn't implement `std::fmt::Display```
+
+To fix this, you can use 
+##### (1) Debug trait
+```rust
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
+
+    println!("rect1 is {rect1:?}");
+    // rect1 is Rectangle { width: 30, height: 50 } 
+    println!("rect1 is {rect1:#?}"); // with # for easier read
+    // react1 is Rectangle {
+    //     width: 30,
+    //     height: 50,
+    // }
+}
+```
+You can also use ```dbg!``` 
+```rust
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let scale = 2;
+    let rect1 = Rectangle {
+        width: dbg!(30 * scale),
+        height: 50,
+    };
+
+    dbg!(&rect1);
+}
+// prints
+// [src/main.rs:10:16] 30 * scale = 60
+// [src/main.rs:14:5] &rect1 = Rectangle {
+//     width: 60,
+//     height: 50,
+// }
+```
+But beware, unlike ```println!``` it takes ownership and then returns it. This is sometimes useful for debugging.
+##### (2) Implement Display
+```rust
+use std::fmt;
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+impl fmt::Display for Rectangle {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Rectangle {{ width: {}, height: {} }}",
+            self.width, self.height
+        )
+    }
+}
+
+fn main() {
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
+    println!("rect1 is {}", rect1);
+}
+```
+
+#### 5.4 Method Syntax
+Using ```impl``` to define method. The first parameter is always ```self```, which represents the instance of the struct it is called on.
+```rust
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+impl Rectangle {
+    fn area(&self) -> u32 { // &self is short for self: &Self
+        self.width * self.height
+    }
+}
+
+fn main() {
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
+
+    println!(
+        "The area of the rectangle is {} square pixels.",
+        rect1.area()
+    );
+}
+```
+There can be multiple  ```fn``` in each ```impl``` block. 
+```rust
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.height > other.height
+    }
+}
+```
+There can also be multiple ```impl``` blocks.
+```rust
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+}
+
+impl Rectangle {
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.height > other.height
+    }
+}
+``` 
+
+##### 5.4.1 Automatic referencing and dereferencing
+Rust automatically adds in ```&```, ```&mut```, or ```*``` so object matches the signature of the method. 
+```rust
+// the following is the same 
+// This automatic referencing behavior works because methods have a clear receiver.
+p1.distance(&p2);
+(&p1).distance(&p2);
+```
+
+##### 5.4.2 Associated functions
+- All functions defined using impl are associated functions. 
+- Associated functions that are not methods are often used for constructors that will return a new instance of the struct. This is like ```new``` in python or other language.
+```rust
+impl Rectangle {
+    fn square(size: u32) -> Self {
+        Self {
+            width: size,
+            height: size,
+        }
+    }
+}
+```
+In the above example, use ```::``` to call the associated function;```let sq = Rectangle::square(3);```
